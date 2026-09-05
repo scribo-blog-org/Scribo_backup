@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Scribo backup</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --card: #ffffff;
+            --line: #e3e2e0;
+            --text: #111111;
+            --muted: #787774;
+            --hover: #f1f1ef;
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        main {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+        }
+        h1 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        p.hint {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        label {
+            display: block;
+            margin: 0 0 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .field { margin-bottom: 14px; }
+        input {
+            width: 100%;
+            min-height: 36px;
+            padding: 8px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--text);
+        }
+        button {
+            width: 100%;
+            height: 36px;
+            margin-top: 8px;
+            border: 0;
+            border-radius: 8px;
+            background: #191919;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        button:hover { filter: brightness(1.08); }
+        button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+        .result {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--hover);
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .result.error { color: #c62828; background: #fbeaea; }
+    </style>
+</head>
+<body>
+    <main>
+        <form class="card" id="form" autocomplete="off">
+            <h1>Scribo backup</h1>
+            <p class="hint">Ручной запуск. Логин и пароль из переменных Vercel.</p>
+            <div class="field">
+                <label for="user">Логин</label>
+                <input id="user" name="user" type="text" required>
+            </div>
+            <div class="field">
+                <label for="password">Пароль</label>
+                <input id="password" name="password" type="password" required>
+            </div>
+            <button type="submit" id="submit">Сделать бэкап</button>
+            <div class="result" id="result" hidden></div>
+        </form>
+    </main>
+    <script>
+        const form = document.getElementById("form")
+        const result = document.getElementById("result")
+        const submit = document.getElementById("submit")
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault()
+            result.hidden = true
+            result.classList.remove("error")
+            submit.disabled = true
+            submit.textContent = "Идёт бэкап…"
+
+            try {
+                const response = await fetch("/api/run", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user: document.getElementById("user").value,
+                        password: document.getElementById("password").value
+                    })
+                })
+                const data = await response.json()
+                if (!data.ok) {
+                    result.classList.add("error")
+                    result.textContent = data.error === "unauthorized"
+                        ? "Неверный логин или пароль"
+                        : data.error === "ui_not_configured"
+                            ? "На Vercel нет BACKUP_UI_USER / BACKUP_UI_PASSWORD"
+                            : "Бэкап не удался"
+                } else {
+                    result.textContent = [
+                        "Готово. Файл на Drive:",
+                        data.fileName,
+                        "",
+                        "База: " + data.database,
+                        "Коллекций: " + data.collectionCount
+                    ].join("\n")
+                }
+            } catch (error) {
+                result.classList.add("error")
+                result.textContent = "Нет ответа от сервера"
+            } finally {
+                result.hidden = false
+                submit.disabled = false
+                submit.textContent = "Сделать бэкап"
+            }
+        })
+    </script>
+</body>
+</html>

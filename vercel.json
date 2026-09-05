@@ -8,6 +8,9 @@
   "functions": {
     "api/cron.js": {
       "maxDuration": 60
+    },
+    "api/run.js": {
+      "maxDuration": 60
     }
   }
 }
