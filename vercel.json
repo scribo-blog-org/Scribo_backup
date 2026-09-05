@@ -6,7 +6,16 @@
       "schedule": "0 3 * * 0"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api"
+    }
+  ],
   "functions": {
+    "api/index.js": {
+      "includeFiles": "public/index.html"
+    },
     "api/cron.js": {
       "maxDuration": 60
     },
