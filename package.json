@@ -7,11 +7,13 @@
   "engines": {
     "node": ">=20"
   },
-  "scripts": {
-    "backup": "node src/cli.js",
-    "restore": "node src/restore.js",
-    "drive-auth": "node src/drive-auth.js"
-  },
+    "scripts": {
+        "backup": "node src/cli.js",
+        "restore": "node src/restore.js",
+        "drive-auth": "node src/drive-auth.js",
+        "check": "node src/check-connections.js",
+        "build": "node src/check-connections.js"
+    },
   "dependencies": {
     "bson": "^6.10.4",
     "googleapis": "^171.4.0",

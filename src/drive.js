@@ -175,5 +175,7 @@ async function rotateBackups(keep) {
 
 module.exports = {
     uploadBackup,
-    rotateBackups
+    rotateBackups,
+    resolveFolderId,
+    driveClient
 }
